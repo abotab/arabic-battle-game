@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>معركة العرب - لعبة إطلاق نار</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- القائمة الرئيسية -->
+    <div id="mainMenu" class="screen active">
+        <div class="menu-container">
+            <h1 class="game-title">⚔️ معركة العرب ⚔️</h1>
+            <p class="subtitle">لعبة إطلاق نار احترافية</p>
+            
+            <div class="menu-buttons">
+                <button class="menu-btn primary" onclick="startGame()">
+                    <span class="icon">▶️</span> ابدأ اللعبة
+                </button>
+                <button class="menu-btn secondary" onclick="showSettings()">
+                    <span class="icon">⚙️</span> الإعدادات
+                </button>
+                <button class="menu-btn tertiary" onclick="showAbout()">
+                    <span class="icon">ℹ️</span> عن اللعبة
+                </button>
+            </div>
+
+            <div class="stats-display">
+                <div class="stat">
+                    <span class="stat-label">أفضل درجة:</span>
+                    <span class="stat-value" id="bestScore">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">المستوى الأخير:</span>
+                    <span class="stat-value" id="lastLevel">1</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- شاشة اللعبة -->
+    <div id="gameScreen" class="screen">
+        <div class="game-hud">
+            <div class="hud-left">
+                <div class="hud-item">
+                    <span class="hud-label">الصحة:</span>
+                    <span class="hud-value" id="health">100</span>
+                </div>
+                <div class="hud-item">
+                    <span class="hud-label">الذخيرة:</span>
+                    <span class="hud-value" id="ammo">300</span>
+                </div>
+            </div>
+
+            <div class="hud-center">
+                <div class="hud-item">
+                    <span class="hud-label">الدرجة:</span>
+                    <span class="hud-value large" id="score">0</span>
+                </div>
+            </div>
+
+            <div class="hud-right">
+                <div class="hud-item">
+                    <span class="hud-label">الأعداء:</span>
+                    <span class="hud-value" id="enemyCount">0</span>
+                </div>
+                <div class="hud-item">
+                    <span class="hud-label">المستوى:</span>
+                    <span class="hud-value" id="currentLevel">1</span>
+                </div>
+            </div>
+
+            <button class="pause-btn" onclick="pauseGame()">⏸️ إيقاف</button>
+        </div>
+
+        <canvas id="gameCanvas" width="1000" height="600"></canvas>
+        <canvas id="radarCanvas" width="150" height="150" class="radar"></canvas>
+    </div>
+
+    <!-- شاشة الإيقاف -->
+    <div id="pauseScreen" class="screen">
+        <div class="pause-container">
+            <h2>اللعبة موقوفة ⏸️</h2>
+            <div class="pause-buttons">
+                <button class="menu-btn primary" onclick="resumeGame()">
+                    <span class="icon">▶️</span> استئناف
+                </button>
+                <button class="menu-btn secondary" onclick="backToMenu()">
+                    <span class="icon">🏠</span> القائمة الرئيسية
+                </button>
+            </div>
+            <div class="pause-stats">
+                <p>الدرجة الحالية: <span id="pauseScore">0</span></p>
+                <p>الأعداء المتبقيين: <span id="pauseEnemies">0</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- شاشة نهاية اللعبة -->
+    <div id="gameOverScreen" class="screen">
+        <div class="game-over-container">
+            <h2>انتهت اللعبة! 💀</h2>
+            <div class="game-over-stats">
+                <div class="stat-box">
+                    <span class="stat-title">الدرجة النهائية</span>
+                    <span class="stat-big" id="finalScore">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-title">عدد القتلى</span>
+                    <span class="stat-big" id="killCount">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-title">المستوى الذي وصلت إليه</span>
+                    <span class="stat-big" id="level">1</span>
+                </div>
+            </div>
+            <div class="game-over-buttons">
+                <button class="menu-btn primary" onclick="startGame()">
+                    <span class="icon">🔄</span> لعبة جديدة
+                </button>
+                <button class="menu-btn secondary" onclick="backToMenu()">
+                    <span class="icon">🏠</span> القائمة الرئيسية
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- شاشة الإعدادات -->
+    <div id="settingsScreen" class="screen">
+        <div class="settings-container">
+            <h2>⚙️ الإعدادات</h2>
+            
+            <div class="settings-group">
+                <label>مستوى الصعوبة:</label>
+                <div class="difficulty-buttons">
+                    <button class="diff-btn" onclick="setDifficulty('easy')">سهل</button>
+                    <button class="diff-btn active" onclick="setDifficulty('normal')">عادي</button>
+                    <button class="diff-btn" onclick="setDifficulty('hard')">صعب</button>
+                    <button class="diff-btn" onclick="setDifficulty('nightmare')">كابوس</button>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <label>مستوى الصوت:</label>
+                <input type="range" id="volumeSlider" min="0" max="100" value="70" 
+                       onchange="setVolume(this.value)" class="slider">
+                <span id="volumeValue">70%</span>
+            </div>
+
+            <div class="settings-group">
+                <label>
+                    <input type="checkbox" id="soundToggle" checked onchange="toggleSound()">
+                    تفعيل الصوت
+                </label>
+            </div>
+
+            <div class="settings-buttons">
+                <button class="menu-btn primary" onclick="backToMenu()">
+                    العودة
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- شاشة حول اللعبة -->
+    <div id="aboutScreen" class="screen">
+        <div class="about-container">
+            <h2>ℹ️ عن اللعبة</h2>
+            <div class="about-content">
+                <h3>معركة العرب</h3>
+                <p>لعبة إطلاق نار احترافية بأسلوب عربي مميز</p>
+                
+                <h4>طريقة اللعب:</h4>
+                <ul>
+                    <li><strong>WASD</strong> أو <strong>الأسهم</strong> للحركة</li>
+                    <li><strong>تحريك الفأرة</strong> للتصويب</li>
+                    <li><strong>النقر بالفأرة</strong> للإطلاق</li>
+                    <li><strong>ESC</strong> للإيقاف</li>
+                </ul>
+
+                <h4>نظام المستويات:</h4>
+                <p>كل ما قتلت جميع الأعداء، ننتقل إلى مستوى أعلى مع أعداء أقوى!</p>
+
+                <h4>الميزات:</h4>
+                <ul>
+                    <li>🎮 نظام لعبة احترافي</li>
+                    <li>🔊 أصوات معركة واقعية</li>
+                    <li>📊 رادار لكشف الأعداء</li>
+                    <li>🎯 مستويات صعوبة متعددة</li>
+                    <li>💥 تأثيرات بصرية مذهلة</li>
+                    <li>🌙 وضع ليلي</li>
+                </ul>
+
+                <h4>الإحصائيات:</h4>
+                <p>يتم حفظ أفضل درجاتك تلقائياً!</p>
+            </div>
+            <button class="menu-btn primary" onclick="backToMenu()">العودة للقائمة</button>
+        </div>
+    </div>
+
+    <!-- عناصر الصوت -->
+    <audio id="shootSound">
+        <source src="data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==" type="audio/wav">
+    </audio>
+    <audio id="hitSound">
+        <source src="data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==" type="audio/wav">
+    </audio>
+    <audio id="enemySound">
+        <source src="data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==" type="audio/wav">
+    </audio>
+    <audio id="gameOverSound">
+        <source src="data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==" type="audio/wav">
+    </audio>
+
+    <script src="game.js"></script>
+</body>
+</html>
